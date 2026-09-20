@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard | Oxygen Gym</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+:root{--bg:#080808;--panel:#111;--panel2:#171717;--text:#f4f4f4;--muted:#a5a5a5;--accent:#c7ff00;--border:#292929;--danger:#ff5c5c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif;line-height:1.5}
+button,input{font:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.topbar{height:70px;padding:0 4%;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1c1c1c;background:#090909;position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:8px;font-weight:900;letter-spacing:1px;font-size:18px}
+.brand span{display:inline-flex;background:var(--accent);color:#000;width:32px;height:32px;align-items:center;justify-content:center;border-radius:50%}
+.brand b{font-weight:500;color:#777}
+.top-actions{display:flex;gap:10px;align-items:center}
+.who{font-size:12px;color:#777}
+
+.btn{background:var(--accent);color:#050505;border:1px solid var(--accent);padding:9px 14px;border-radius:5px;font-weight:800;font-size:13px}
+.btn:hover{filter:brightness(.92)}
+.btn.ghost{background:transparent;color:#fff;border-color:#444}
+.btn.ghost:hover{border-color:#777;filter:none}
+.btn.danger{background:transparent;color:var(--danger);border-color:#5a2222}
+
+main{width:min(96%,1240px);margin:0 auto;padding:36px 0 70px}
+.title{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:26px}
+.title h1{margin:0;font-size:34px;letter-spacing:-1px}
+.title p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.live{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#8f8f8f}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block}
+
+.metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px}
+.metric{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px 18px}
+.metric span{display:block;color:#8a8a8a;font-size:12px}
+.metric strong{display:block;font-size:24px;margin-top:4px}
+.metric.hot{border-color:#465800}
+.metric.hot strong{color:var(--accent)}
+
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:9px}
+.tabs{display:flex;gap:4px;padding:10px 12px 0;border-bottom:1px solid var(--border);overflow-x:auto}
+.tab{background:none;border:0;color:#888;padding:11px 16px;border-bottom:2px solid transparent;font-weight:600;font-size:14px;white-space:nowrap}
+.tab:hover{color:#fff}
+.tab[aria-selected="true"]{color:#fff;border-bottom-color:var(--accent)}
+.tab small{margin-left:6px;background:#222;color:#bbb;border-radius:20px;padding:1px 8px;font-size:11px}
+
+.tools{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:16px 18px;flex-wrap:wrap}
+.tools input{width:min(320px,100%);padding:10px 13px;background:#090909;border:1px solid #333;border-radius:5px;color:#fff;outline:none}
+.tools input:focus{border-color:var(--accent)}
+.tools .grp{display:flex;gap:8px;flex-wrap:wrap}
+
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:13px 16px;border-top:1px solid var(--border);white-space:nowrap}
+th{color:#7a7a7a;font-size:11px;font-weight:600;background:#0e0e0e}
+td{color:#ddd}
+td.sub{color:#8a8a8a}
+.badge{padding:3px 9px;border-radius:20px;background:#202600;color:#dfff7a;font-size:11px}
+.badge.red{background:#2b1111;color:#ff9b9b}
+.badge.grey{background:#222;color:#bbb}
+.empty{padding:50px 20px;text-align:center;color:#8a8a8a}
+.empty b{display:block;color:#ddd;margin-bottom:4px}
+.row-actions{display:flex;gap:6px}
+.row-actions .btn{padding:6px 10px;font-size:12px}
+footer{margin-top:18px;font-size:12px;color:#666}
+
+@media(max-width:1000px){.metrics{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.metrics{grid-template-columns:1fr 1fr}.title h1{font-size:28px}.who{display:none}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><span>O₂</span> OXYGEN <b>ADMIN</b></div>
+  <div class="top-actions">
+    <span class="who">admin@oxygengym.com</span>
+    <a class="btn ghost" href="index.html" style="text-decoration:none">View website</a>
+    <button class="btn" id="logoutBtn">Sign out</button>
+  </div>
+</header>
+
+<main>
+  <div class="title">
+    <div>
+      <h1>Gym overview</h1>
+      <p>Every member, login, attendance record and payment saved by the website.</p>
+    </div>
+    <span class="live"><i></i> Updates automatically when a customer logs in</span>
+  </div>
+
+  <section class="metrics" aria-label="Summary">
+    <div class="metric"><span>Total members</span><strong id="mMembers">0</strong></div>
+    <div class="metric"><span>Active memberships</span><strong id="mActive">0</strong></div>
+    <div class="metric hot"><span>Logins today</span><strong id="mLoginsToday">0</strong></div>
+    <div class="metric"><span>Present today</span><strong id="mPresent">0</strong></div>
+    <div class="metric"><span>Fees collected</span><strong id="mPaid">₹0</strong></div>
+    <div class="metric"><span>Fees pending</span><strong id="mPending">₹0</strong></div>
+  </section>
+
+  <section class="panel">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="customers" aria-selected="true">Customers <small id="cCustomers">0</small></button>
+      <button class="tab" role="tab" data-tab="logins" aria-selected="false">Login activity <small id="cLogins">0</small></button>
+      <button class="tab" role="tab" data-tab="attendance" aria-selected="false">Attendance <small id="cAttendance">0</small></button>
+      <button class="tab" role="tab" data-tab="payments" aria-selected="false">Payments <small id="cPayments">0</small></button>
+    </div>
+
+    <div class="tools">
+      <input id="search" type="search" placeholder="Search this table" aria-label="Search this table">
+      <div class="grp">
+        <button class="btn ghost" id="exportBtn">Download CSV</button>
+        <button class="btn danger" id="clearLogBtn" hidden>Clear login history</button>
+      </div>
+    </div>
+
+    <div class="table-wrap"><table id="table"></table></div>
+  </section>
+
+  <footer>Data is stored in this browser's localStorage under "oxygenGymDB". Use the same browser as the website to see customer data.</footer>
+</main>
+
+<script>
+const DB_KEY = "oxygenGymDB";
+const ADMIN_SESSION_KEY = "oxygenGymAdmin";
+
+// ---- guard: must be signed in ----
+try {
+  if (sessionStorage.getItem(ADMIN_SESSION_KEY) !== "1") location.replace("admin-login.html");
+} catch (e) { location.replace("admin-login.html"); }
+
+// ---- helpers ----
+function getDB() {
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(DB_KEY) || "null"); } catch (e) {}
+  d = d || {};
+  d.members = d.members || [];
+  d.attendance = d.attendance || [];
+  d.payments = d.payments || [];
+  d.loginLog = d.loginLog || [];
+  return d;
+}
+function saveDB(d) { localStorage.setItem(DB_KEY, JSON.stringify(d)); }
+function esc(v) {
+  return String(v == null ? "" : v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function iso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function today() { return iso(new Date()); }
+function money(n) { return "₹" + Number(n || 0).toLocaleString("en-IN"); }
+function fmtDate(v) {
+  if (!v) return "—";
+  const d = new Date(String(v).length <= 10 ? v + "T00:00:00" : v);
+  return isNaN(d) ? "—" : d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+function fmtDateTime(v) {
+  const d = new Date(v);
+  if (isNaN(d)) return "—";
+  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) + ", " +
+         d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+}
+function isoDay(v) { const d = new Date(v); return isNaN(d) ? "" : iso(d); }
+
+// ---- table definitions ----
+let activeTab = "customers";
+let currentRows = [];     // plain-text rows for CSV
+let currentHeaders = [];
+
+function build(tab, d, q) {
+  const has = s => String(s).toLowerCase().includes(q);
+  const memberById = id => d.members.find(m => m.id === id);
+
+  if (tab === "customers") {
+    const lastLogin = {}, loginCount = {};
+    d.loginLog.forEach(l => {
+      if (l.type !== "Login") return;
+      loginCount[l.memberId] = (loginCount[l.memberId] || 0) + 1;
+      if (!lastLogin[l.memberId] || l.time > lastLogin[l.memberId]) lastLogin[l.memberId] = l.time;
+    });
+    const rows = d.members.filter(m => has([m.name, m.email, m.phone, m.plan, m.gender].join(" ")));
+    return {
+      headers: ["Name", "Email", "Mobile", "Gender", "Plan", "Joined", "Expires", "Status", "Fees due", "Logins", "Last login", "Actions"],
+      csvHeaders: ["Name", "Email", "Mobile", "Gender", "DOB", "Address", "Plan", "Joined", "Expires", "Status", "Fees due", "Logins", "Last login"],
+      html: rows.map(m => {
+        const active = m.expiryDate >= today();
+        return `<tr>
+          <td>${esc(m.name)}</td><td>${esc(m.email)}</td><td class="sub">${esc(m.phone)}</td><td class="sub">${esc(m.gender)}</td>
+          <td>${esc(m.plan)}</td><td class="sub">${fmtDate(m.startDate)}</td><td class="sub">${fmtDate(m.expiryDate)}</td>
+          <td><span class="badge ${active ? "" : "red"}">${active ? "Active" : "Expired"}</span></td>
+          <td>${m.feesDue > 0 ? `<span class="badge red">${money(m.feesDue)}</span>` : `<span class="badge">Paid up</span>`}</td>
+          <td>${loginCount[m.id] || 0}</td><td class="sub">${lastLogin[m.id] ? fmtDateTime(lastLogin[m.id]) : "Never"}</td>
+          <td><div class="row-actions">
+            <button class="btn" data-act="pay" data-id="${esc(m.id)}">Record payment</button>
+            <button class="btn danger" data-act="del" data-id="${esc(m.id)}">Delete</button>
+          </div></td></tr>`;
+      }),
+      csv: rows.map(m => [m.name, m.email, m.phone, m.gender, m.dob, m.address, m.plan, m.startDate, m.expiryDate,
+        m.expiryDate >= today() ? "Active" : "Expired", m.feesDue, loginCount[m.id] || 0, lastLogin[m.id] || ""]),
+      empty: ["No customers yet", "Members appear here as soon as they register on the website."]
+    };
+  }
+
+  if (tab === "logins") {
+    const rows = d.loginLog.slice().sort((a, b) => b.time.localeCompare(a.time))
+      .filter(l => has([l.name, l.email, l.type, fmtDateTime(l.time)].join(" ")));
+    return {
+      headers: ["Customer", "Email", "Event", "Date and time"],
+      csvHeaders: ["Customer", "Email", "Event", "Timestamp"],
+      html: rows.map(l => `<tr><td>${esc(l.name)}</td><td>${esc(l.email)}</td>
+        <td><span class="badge ${l.type === "Login" ? "" : "grey"}">${esc(l.type)}</span></td><td class="sub">${fmtDateTime(l.time)}</td></tr>`),
+      csv: rows.map(l => [l.name, l.email, l.type, l.time]),
+      empty: ["No logins recorded yet", "Each time a customer logs in or registers, it is saved here with the time."]
+    };
+  }
+
+  if (tab === "attendance") {
+    const rows = d.attendance.slice().sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time))
+      .filter(a => { const m = memberById(a.memberId); return has([m ? m.name : "", m ? m.email : "", a.date].join(" ")); });
+    return {
+      headers: ["Customer", "Email", "Date", "Check-in", "Status"],
+      csvHeaders: ["Customer", "Email", "Date", "Check-in", "Status"],
+      html: rows.map(a => { const m = memberById(a.memberId) || {};
+        return `<tr><td>${esc(m.name || "Deleted member")}</td><td>${esc(m.email || "")}</td><td class="sub">${fmtDate(a.date)}</td><td class="sub">${esc(a.time)}</td><td><span class="badge">${esc(a.status || "Present")}</span></td></tr>`; }),
+      csv: rows.map(a => { const m = memberById(a.memberId) || {}; return [m.name || "Deleted member", m.email || "", a.date, a.time, a.status || "Present"]; }),
+      empty: ["No attendance yet", "Attendance appears when members mark themselves present."]
+    };
+  }
+
+  const rows = d.payments.slice().sort((a, b) => b.date.localeCompare(a.date))
+    .filter(p => { const m = memberById(p.memberId); return has([m ? m.name : "", p.description, p.status, p.date].join(" ")); });
+  return {
+    headers: ["Customer", "Date", "Description", "Amount", "Status"],
+    csvHeaders: ["Customer", "Date", "Description", "Amount", "Status"],
+    html: rows.map(p => { const m = memberById(p.memberId) || {};
+      return `<tr><td>${esc(m.name || "Deleted member")}</td><td class="sub">${fmtDate(p.date)}</td><td>${esc(p.description)}</td><td>${money(p.amount)}</td>
+        <td><span class="badge ${p.status === "Pending" ? "red" : ""}">${esc(p.status)}</span></td></tr>`; }),
+    csv: rows.map(p => { const m = memberById(p.memberId) || {}; return [m.name || "Deleted member", p.date, p.description, p.amount, p.status]; }),
+    empty: ["No payments yet", "Registrations, renewals and recorded payments appear here."]
+  };
+}
+
+// ---- render ----
+function render() {
+  const d = getDB();
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  const t = today();
+
+  const set = (id, v) => { document.getElementById(id).textContent = v; };
+  set("mMembers", d.members.length);
+  set("mActive", d.members.filter(m => m.expiryDate >= t).length);
+  set("mLoginsToday", d.loginLog.filter(l => l.type === "Login" && isoDay(l.time) === t).length);
+  set("mPresent", d.attendance.filter(a => a.date === t).length);
+  set("mPaid", money(d.payments.filter(p => p.status === "Paid").reduce((s, p) => s + Number(p.amount || 0), 0)));
+  set("mPending", money(d.members.reduce((s, m) => s + Number(m.feesDue || 0), 0)));
+  set("cCustomers", d.members.length);
+  set("cLogins", d.loginLog.length);
+  set("cAttendance", d.attendance.length);
+  set("cPayments", d.payments.length);
+
+  const v = build(activeTab, d, q);
+  currentHeaders = v.csvHeaders; currentRows = v.csv;
+  const table = document.getElementById("table");
+  table.innerHTML = "<thead><tr>" + v.headers.map(h => `<th>${h}</th>`).join("") + "</tr></thead>" +
+    "<tbody>" + (v.html.length ? v.html.join("") :
+      `<tr><td colspan="${v.headers.length}" class="empty" style="white-space:normal"><b>${q ? "Nothing matches your search" : v.empty[0]}</b>${q ? "Try a different name, email or date." : v.empty[1]}</td></tr>`) + "</tbody>";
+  document.getElementById("clearLogBtn").hidden = activeTab !== "logins" || !d.loginLog.length;
+}
+
+// ---- events ----
+document.querySelectorAll(".tab").forEach(btn => btn.addEventListener("click", () => {
+  activeTab = btn.dataset.tab;
+  document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", b === btn ? "true" : "false"));
+  document.getElementById("search").value = "";
+  render();
+}));
+document.getElementById("search").addEventListener("input", render);
+
+document.getElementById("table").addEventListener("click", e => {
+  const b = e.target.closest("button[data-act]");
+  if (!b) return;
+  const d = getDB(), m = d.members.find(x => x.id === b.dataset.id);
+  if (!m) return;
+  if (b.dataset.act === "pay") {
+    const raw = prompt("Payment received from " + m.name + " (₹). Pending: " + m.feesDue, m.feesDue);
+    const amount = Number(raw);
+    if (!raw || !(amount > 0)) return;
+    m.feesDue = Math.max(0, Number(m.feesDue || 0) - amount);
+    d.payments.push({ id: Date.now().toString(36), memberId: m.id, date: today(), description: "Admin recorded payment", amount, status: "Paid" });
+    saveDB(d);
+  } else if (b.dataset.act === "del") {
+    if (!confirm("Delete " + m.name + " and all their attendance and payment records? This cannot be undone.")) return;
+    d.members = d.members.filter(x => x.id !== m.id);
+    d.attendance = d.attendance.filter(x => x.memberId !== m.id);
+    d.payments = d.payments.filter(x => x.memberId !== m.id);
+    saveDB(d);
+  }
+  render();
+});
+
+document.getElementById("clearLogBtn").addEventListener("click", () => {
+  if (!confirm("Clear the entire login history? Members and payments are not affected.")) return;
+  const d = getDB(); d.loginLog = []; saveDB(d); render();
+});
+
+function csvCell(v) {
+  let s = String(v == null ? "" : v);
+  if (/^[=+\-@]/.test(s)) s = "'" + s;          // stop spreadsheet formula injection
+  return '"' + s.replace(/"/g, '""') + '"';
+}
+document.getElementById("exportBtn").addEventListener("click", () => {
+  const lines = [currentHeaders].concat(currentRows).map(r => r.map(csvCell).join(","));
+  const blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "oxygen-gym-" + activeTab + "-" + today() + ".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  try { sessionStorage.removeItem(ADMIN_SESSION_KEY); } catch (e) {}
+  location.href = "admin-login.html";
+});
+
+// live refresh when a customer logs in from another tab
+window.addEventListener("storage", e => { if (e.key === DB_KEY) render(); });
+
+render();
+</script>
+</body>
+</html>
