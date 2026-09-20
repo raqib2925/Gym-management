@@ -17,7 +17,7 @@
 @media(max-width:800px){.site-header nav{display:none}.menu-btn{display:block}.hero{min-height:560px;padding:60px 5%}.hero h1{letter-spacing:-2px}.stats,.three,.four,.metric-grid,.dashboard-grid,.contact-grid{grid-template-columns:1fr 1fr}.stats div:nth-child(2){border:0}.dashboard-layout{display:block}.sidebar{display:none}.dashboard-main{margin:0;width:100%;padding:25px 4%}.mobile-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}.mobile-top button{background:none;border:0;color:#fff;font-size:22px}.page-title{align-items:start;gap:15px;flex-direction:column}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.cta{flex-direction:column;align-items:start;gap:20px}.contact-grid{grid-template-columns:1fr}.form-card{padding:25px}.section-head h1,.section-head h2,.contact-grid h1{font-size:35px}}
 @media(max-width:520px){.stats,.three,.four,.metric-grid{grid-template-columns:1fr}.stats div{border-right:0;border-bottom:1px solid var(--border)}.hero h1{font-size:52px}.hero-actions{flex-direction:column}.btn{text-align:center}.footer-inner{display:block}.page-title h1{font-size:32px}.metric-grid{gap:10px}.metric strong{font-size:22px}}
 
-.view{display:none}.view.active{display:block}.app-nav{position:sticky;top:0;z-index:20}.single-main{min-height:80vh}.dashboard-links{margin-bottom:25px;display:flex;gap:8px;flex-wrap:wrap}
+.site-header nav.open{display:flex!important;flex-direction:column;position:absolute;top:78px;left:0;right:0;background:#090909;padding:20px 4%;border-bottom:1px solid #222;align-items:flex-start}.view{display:none}.view.active{display:block}.app-nav{position:sticky;top:0;z-index:20}.single-main{min-height:80vh}.dashboard-links{margin-bottom:25px;display:flex;gap:8px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -30,7 +30,7 @@
 <a href="#" onclick="showView('contact');return false">Contact</a>
 <a class="btn btn-sm" href="#" onclick="showView('login');return false">Member Login</a>
 </nav>
-<button class="menu-btn" onclick="alert('Use the navigation buttons above.')">☰</button>
+<button class="menu-btn" onclick="document.querySelector('.site-header nav').classList.toggle('open')">☰</button>
 </header>
 
 <section id="home" class="view active">
@@ -76,7 +76,7 @@
 <a class="brand centered" href="#" onclick="showView('home');return false"><span>O₂</span> OXYGEN <b>GYM</b></a>
 <p class="eyebrow">MEMBER PORTAL</p><h1>Welcome <span>back.</span></h1><p>Login using your registered email.</p>
 <form id="loginForm"><label>Email<input id="loginEmail" type="email" required placeholder="you@example.com"></label><button class="btn full-btn" type="submit">Login →</button></form>
-<div id="loginMsg"></div><hr><p class="small">Admin demo: <b>admin@oxygengym.com</b> / <b>admin123</b></p>
+<div id="loginMsg"></div><hr><p class="small">Gym staff? <a href="admin-login.html" style="color:var(--accent)">Admin sign in</a></p>
 </div></main></section>
 
 <section id="dashboard" class="view app-bg"><main class="dashboard-main single-main">
@@ -137,24 +137,27 @@
 <section class="form-card"><form id="contactForm"><label>Name<input name="name" required></label><label>Email<input name="email" type="email" required></label><label>Message<textarea name="message" rows="6" required></textarea></label><button class="btn" type="submit">Send Message</button></form><div id="contactMsg"></div></section>
 </div></main></section>
 
-<footer><div class="container footer-inner"><p>© 2026 Oxygen Gym — Gym Management System</p></div></footer>
+<footer><div class="container footer-inner"><p>© 2026 Oxygen Gym — Gym Management System</p><a href="admin-login.html" style="color:#777;font-size:13px">Admin login</a></div></footer>
 
 <script>
 const DB_KEY="oxygenGymDB"; const SESSION_KEY="oxygenGymSession";
 const PLAN_MONTHS={Monthly:1,Quarterly:3,"Half-Yearly":6,Yearly:12};
 const PLAN_PRICE={Monthly:1499,Quarterly:3999,"Half-Yearly":6999,Yearly:11999};
 
-function getDB(){let d=JSON.parse(localStorage.getItem(DB_KEY)||"null");if(!d){d={members:[],attendance:[],payments:[]};localStorage.setItem(DB_KEY,JSON.stringify(d))}return d}
+function getDB(){let d=null;try{d=JSON.parse(localStorage.getItem(DB_KEY)||"null")}catch(e){}if(!d){d={members:[],attendance:[],payments:[],loginLog:[]}}d.members=d.members||[];d.attendance=d.attendance||[];d.payments=d.payments||[];d.loginLog=d.loginLog||[];localStorage.setItem(DB_KEY,JSON.stringify(d));return d}
+function logEvent(d,m,type){d.loginLog.push({id:uid(),memberId:m.id,name:m.name,email:m.email,type:type,time:new Date().toISOString()})}
 function saveDB(d){localStorage.setItem(DB_KEY,JSON.stringify(d))}
 function session(){return localStorage.getItem(SESSION_KEY)}
 function currentMember(){let email=session();return getDB().members.find(m=>m.email===email)}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function fmtDate(v){if(!v)return "—";return new Date(v+"T00:00:00").toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"})}
-function today(){return new Date().toISOString().slice(0,10)}
-function addMonths(date,months){let d=new Date(date+"T00:00:00");d.setMonth(d.getMonth()+months);return d.toISOString().slice(0,10)}
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function today(){return iso(new Date())}
+function addMonths(date,months){let d=new Date(date+"T00:00:00");d.setMonth(d.getMonth()+months);return iso(d)}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function money(n){return "₹"+Number(n||0).toLocaleString("en-IN")}
 function toggleMenu(){alert("On mobile, use the main page buttons. Dashboard pages can be opened directly from the desktop-style navigation when needed.")}
-function logout(){localStorage.removeItem(SESSION_KEY);location.href="login.html"}
+function logout(){localStorage.removeItem(SESSION_KEY);showView("login")}
 
 document.addEventListener("DOMContentLoaded",()=>{
   const params=new URLSearchParams(location.search); const plan=params.get("plan"); const planEl=document.getElementById("plan"); if(plan&&planEl)planEl.value=plan;
@@ -174,22 +177,22 @@ function registerMember(e){
  if(d.members.some(m=>m.email===email)){show("registerMsg","This email is already registered. Please login.","error");return}
  let start=today(),months=PLAN_MONTHS[f.get("plan")],price=PLAN_PRICE[f.get("plan")];
  let m={id:uid(),name:f.get("name"),phone:f.get("phone"),email,dob:f.get("dob"),gender:f.get("gender"),plan:f.get("plan"),address:f.get("address"),startDate:start,expiryDate:addMonths(start,months),feesDue:price,createdAt:new Date().toISOString()};
- d.members.push(m);d.payments.push({id:uid(),memberId:m.id,date:start,description:"Membership registration",amount:0,status:"Pending"});saveDB(d);localStorage.setItem(SESSION_KEY,email);
- show("registerMsg","Registration successful! Redirecting to your dashboard...","success");setTimeout(()=>location.href="dashboard.html",800)
+ d.members.push(m);logEvent(d,m,"Registration");d.payments.push({id:uid(),memberId:m.id,date:start,description:"Membership registration",amount:0,status:"Pending"});saveDB(d);localStorage.setItem(SESSION_KEY,email);
+ show("registerMsg","Registration successful! Redirecting to your dashboard...","success");setTimeout(()=>{e.target.reset();showView("dashboard")},800)
 }
 function loginUser(e){
  e.preventDefault();let email=document.getElementById("loginEmail").value.trim().toLowerCase(),d=getDB();
- if(email==="admin@oxygengym.com"){let pass=prompt("Enter admin password:");if(pass==="admin123"){localStorage.setItem(SESSION_KEY,"admin");location.href="admin.html"}else show("loginMsg","Incorrect admin password.","error");return}
- let m=d.members.find(x=>x.email===email);if(!m){show("loginMsg","No member found. Please register first.","error");return}localStorage.setItem(SESSION_KEY,email);location.href="dashboard.html"
+ if(email==="admin@oxygengym.com"){location.href="admin-login.html";return}
+ let m=d.members.find(x=>x.email===email);if(!m){show("loginMsg","No member found. Please register first.","error");return}logEvent(d,m,"Login");saveDB(d);localStorage.setItem(SESSION_KEY,email);document.getElementById("loginForm").reset();document.getElementById("loginMsg").innerHTML="";showView("dashboard")
 }
-function requireMember(){if(!session()||session()==="admin"){location.href="login.html";return null}return currentMember()}
+function requireMember(){if(!session()||session()==="admin"){showView("login");return null}let m=currentMember();if(!m){showView("login");return null}return m}
 function show(id,msg,type){let el=document.getElementById(id);if(el)el.innerHTML=`<div class="${type}">${msg}</div>`}
 function renderDashboard(){
  let m=requireMember();if(!m)return;let d=getDB();
  const set=(id,v)=>{let e=document.getElementById(id);if(e)e.textContent=v};
  set("dashPlan",m.plan);set("dashExpiry",fmtDate(m.expiryDate));set("dashAttendance",d.attendance.filter(a=>a.memberId===m.id&&a.date.slice(0,7)===today().slice(0,7)).length);set("dashPending",money(m.feesDue));
  set("sideUser",m.name);
- let profile=document.getElementById("profile");if(profile)profile.innerHTML=[["Name",m.name],["Email",m.email],["Mobile",m.phone],["Gender",m.gender],["Plan",m.plan],["Valid Until",fmtDate(m.expiryDate)]].map(x=>`<div class="profile-row"><span>${x[0]}</span><span>${x[1]}</span></div>`).join("");
+ let profile=document.getElementById("profile");if(profile)profile.innerHTML=[["Name",m.name],["Email",m.email],["Mobile",m.phone],["Gender",m.gender],["Plan",m.plan],["Valid Until",fmtDate(m.expiryDate)]].map(x=>`<div class="profile-row"><span>${x[0]}</span><span>${esc(x[1])}</span></div>`).join("");
  let ra=document.getElementById("recentAttendance");let rows=d.attendance.filter(a=>a.memberId===m.id).slice(-5).reverse();ra.innerHTML=rows.length?rows.map(a=>`<div class="profile-row"><span>${fmtDate(a.date)}</span><span class="badge">Present · ${a.time}</span></div>`).join(""):"<p class='small'>No attendance records yet.</p>"
 }
 function markAttendance(){
@@ -197,14 +200,14 @@ function markAttendance(){
  d.attendance.push({id:uid(),memberId:m.id,date:today(),time:new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}),status:"Present"});saveDB(d);renderAttendance();alert("Today's attendance marked successfully!")
 }
 function renderAttendance(){let m=requireMember();if(!m)return;let d=getDB(),rows=d.attendance.filter(a=>a.memberId===m.id).sort((a,b)=>b.date.localeCompare(a.date));let tb=document.getElementById("attendanceTable");if(tb)tb.innerHTML=rows.length?rows.map(a=>`<tr><td>${fmtDate(a.date)}</td><td>${a.time}</td><td><span class="badge">Present</span></td></tr>`).join(""):`<tr><td colspan="3">No attendance records.</td></tr>`;let c=document.getElementById("attendanceCount");if(c)c.textContent=rows.length+" records"}
-function renderMembership(){let m=requireMember();if(!m)return;let el=document.getElementById("currentMembership");if(el)el.innerHTML=`<h2>${m.plan} Membership <span class="badge">ACTIVE</span></h2><p>Valid from ${fmtDate(m.startDate)} to ${fmtDate(m.expiryDate)} · Pending fees: <b>${money(m.feesDue)}</b></p>`}
-function renewMembership(plan,price,months){let m=requireMember();if(!m)return;let d=getDB(),start=(new Date(m.expiryDate)>=new Date(today()+"T00:00:00"))?m.expiryDate:today();m.plan=plan;m.startDate=start;m.expiryDate=addMonths(start,months);m.feesDue+=price;d.payments.push({id:uid(),memberId:m.id,date:today(),description:plan+" membership renewal",amount:0,status:"Pending"});saveDB(d);renderMembership();alert(plan+" renewal recorded. Pending fee added: "+money(price))}
+function renderMembership(){let m=session()&&session()!=="admin"?currentMember():null;if(!m)return;let el=document.getElementById("currentMembership");if(el)el.innerHTML=`<h2>${m.plan} Membership <span class="badge">ACTIVE</span></h2><p>Valid from ${fmtDate(m.startDate)} to ${fmtDate(m.expiryDate)} · Pending fees: <b>${money(m.feesDue)}</b></p>`}
+function renewMembership(plan,price,months){let m0=requireMember();if(!m0)return;let d=getDB(),m=d.members.find(x=>x.id===m0.id),start=(new Date(m.expiryDate)>=new Date(today()+"T00:00:00"))?m.expiryDate:today();m.plan=plan;m.startDate=start;m.expiryDate=addMonths(start,months);m.feesDue+=price;d.payments.push({id:uid(),memberId:m.id,date:today(),description:plan+" membership renewal",amount:0,status:"Pending"});saveDB(d);renderMembership();alert(plan+" renewal recorded. Pending fee added: "+money(price))}
 function renderPayments(){let m=requireMember();if(!m)return;let d=getDB(),rows=d.payments.filter(p=>p.memberId===m.id);let paid=rows.filter(p=>p.status==="Paid").reduce((s,p)=>s+Number(p.amount),0),pending=m.feesDue;document.getElementById("totalPaid").textContent=money(paid);document.getElementById("totalPending").textContent=money(pending);let tb=document.getElementById("paymentsTable");tb.innerHTML=rows.length?rows.map(p=>`<tr><td>${fmtDate(p.date)}</td><td>${p.description}</td><td>${money(p.amount)}</td><td><span class="badge ${p.status==="Pending"?"danger":""}">${p.status}</span></td></tr>`).join(""):`<tr><td colspan="4">No payments.</td></tr>`}
-function demoPayment(){let m=requireMember();if(!m)return;let amount=Number(prompt("Enter payment amount:",m.feesDue));if(!amount||amount<1)return;let d=getDB();m.feesDue=Math.max(0,m.feesDue-amount);d.payments.push({id:uid(),memberId:m.id,date:today(),description:"Fee payment",amount,status:"Paid"});saveDB(d);renderPayments();alert("Payment recorded successfully.")}
+function demoPayment(){let m0=requireMember();if(!m0)return;let amount=Number(prompt("Enter payment amount:",m0.feesDue));if(!amount||amount<1)return;let d=getDB(),m=d.members.find(x=>x.id===m0.id);m.feesDue=Math.max(0,m.feesDue-amount);d.payments.push({id:uid(),memberId:m.id,date:today(),description:"Fee payment",amount,status:"Paid"});saveDB(d);renderPayments();alert("Payment recorded successfully.")}
 function renderAdmin(){
- if(session()!=="admin"){location.href="login.html";return}let d=getDB(),members=d.members,search=(document.getElementById("memberSearch")?.value||"").toLowerCase();let filtered=members.filter(m=>(m.name+" "+m.email+" "+m.phone).toLowerCase().includes(search));
+ if(session()!=="admin"){showView("login");return}let d=getDB(),members=d.members,search=(document.getElementById("memberSearch")?.value||"").toLowerCase();let filtered=members.filter(m=>(m.name+" "+m.email+" "+m.phone).toLowerCase().includes(search));
  document.getElementById("adminMembers").textContent=members.length;document.getElementById("adminActive").textContent=members.filter(m=>m.expiryDate>=today()).length;document.getElementById("adminToday").textContent=d.attendance.filter(a=>a.date===today()).length;document.getElementById("adminFees").textContent=money(members.reduce((s,m)=>s+Number(m.feesDue||0),0));
- let tb=document.getElementById("membersTable");tb.innerHTML=filtered.length?filtered.map(m=>`<tr><td>${m.name}</td><td>${m.email}</td><td>${m.plan}</td><td>${fmtDate(m.expiryDate)}</td><td>${money(m.feesDue)}</td><td><button class="btn btn-sm" onclick="adminPay('${m.id}')">Pay</button> <button class="btn btn-sm" onclick="deleteMember('${m.id}')">Delete</button></td></tr>`).join(""):`<tr><td colspan="6">No members found.</td></tr>`
+ let tb=document.getElementById("membersTable");tb.innerHTML=filtered.length?filtered.map(m=>`<tr><td>${esc(m.name)}</td><td>${esc(m.email)}</td><td>${m.plan}</td><td>${fmtDate(m.expiryDate)}</td><td>${money(m.feesDue)}</td><td><button class="btn btn-sm" onclick="adminPay('${m.id}')">Pay</button> <button class="btn btn-sm" onclick="deleteMember('${m.id}')">Delete</button></td></tr>`).join(""):`<tr><td colspan="6">No members found.</td></tr>`
 }
 function adminPay(id){let d=getDB(),m=d.members.find(x=>x.id===id);if(!m)return;let amount=Number(prompt("Payment amount for "+m.name+":",m.feesDue));if(!amount)return;m.feesDue=Math.max(0,m.feesDue-amount);d.payments.push({id:uid(),memberId:id,date:today(),description:"Admin recorded payment",amount,status:"Paid"});saveDB(d);renderAdmin()}
 function deleteMember(id){if(!confirm("Delete this member and their records?"))return;let d=getDB();d.members=d.members.filter(m=>m.id!==id);d.attendance=d.attendance.filter(a=>a.memberId!==id);d.payments=d.payments.filter(p=>p.memberId!==id);saveDB(d);renderAdmin()}
@@ -214,7 +217,7 @@ function sendContact(e){e.preventDefault();show("contactMsg","Message submitted 
 function showView(id){
  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
  const v=document.getElementById(id); if(v)v.classList.add('active');
- window.scrollTo(0,0);
+ window.scrollTo(0,0);document.querySelector('.site-header nav').classList.remove('open');
  if(id==='dashboard')renderDashboard();
  if(id==='attendance')renderAttendance();
  if(id==='membership')renderMembership();
